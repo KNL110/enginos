@@ -2,7 +2,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
-import { CORS_ORIGIN } from "./constants.js";
+import { CORS_ORIGIN } from "../constants.js";
 
 const app = express();
 
