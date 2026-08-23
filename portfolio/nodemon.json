@@ -1,0 +1,7 @@
+{
+  "exec": "next dev -H 0.0.0.0",
+  "watch": ["next.config.ts", "package.json"],
+  "ext": "ts,js,json",
+  "ignore": ["app/**", "components/**", "data/**", ".next/**", "node_modules/**", "public/**"],
+  "delay": 500
+}

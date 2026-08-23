@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-ink-950: #08090c;
+  --color-ink-900: #0d0f14;
+  --color-ink-800: #14171f;
+  --color-ink-700: #1c202b;
+  --color-ink-600: #2a2f3d;
+  --color-ink-400: #6b7280;
+  --color-ink-300: #9ca3af;
+  --color-ink-200: #d1d5db;
+  --color-ink-100: #e5e7eb;
+
+  --color-accent: #34d399;
+  --color-accent-soft: #6ee7b7;
+  --color-accent-dim: #10b981;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --max-width-content: 1600px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply text-ink-100 antialiased;
+  background-color: #08090c;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 15% -10%, rgba(52, 211, 153, 0.16), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 100% 15%, rgba(52, 211, 153, 0.08), transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: auto, auto, 48px 48px, 48px 48px;
+  background-attachment: fixed, fixed, fixed, fixed;
+}
+
+::selection {
+  @apply bg-accent/30 text-accent-soft;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-ink-950;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-ink-700 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-ink-600;
+}
+
+.section-heading {
+  @apply font-mono text-sm uppercase tracking-[0.25em] text-accent mb-3;
+}
+
+.container-px {
+  @apply px-6 sm:px-10 lg:px-16 xl:px-24;
+}
