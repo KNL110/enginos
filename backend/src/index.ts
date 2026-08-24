@@ -5,12 +5,13 @@ import app from "./app.js";
 
 connectDB()
 .then(() => {
-    app.on("error", (error) => {
+    const server = app.listen(PORT,() => {
+        console.log(`SERVER LISTENING ON PORT: ${PORT}`);
+    })
+
+    server.on("error", (error) => {
         console.log("SOME ERROR OCCURED :(", error);
         process.exit(1);
-    })
-    app.listen(PORT,() => {
-        console.log(`SERVER LISTENING ON PORT: ${PORT}`);
     })
 })
 .catch((error) => {
