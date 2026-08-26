@@ -162,7 +162,7 @@ export const githubCallback = asyncHandler(async (req, res) => {
 
         await issueSession(res, user!.id);
 
-        return res.redirect(FRONTEND_URL!);
+        return res.redirect(new URL("/dashboard", FRONTEND_URL!).toString());
     } catch (error) {
         console.error("[github-callback] unexpected failure", error);
         return redirectWithError(res, "oauth_failed");
