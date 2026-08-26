@@ -4,6 +4,10 @@ import cors from "cors";
 
 import { CORS_ORIGIN } from "./constants.js";
 
+if (!CORS_ORIGIN) {
+    throw new Error("CORS_ORIGIN is not set");
+}
+
 const app = express();
 
 app.use(cors({

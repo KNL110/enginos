@@ -1,9 +1,12 @@
+import { sql } from "drizzle-orm";
 import { PORT } from "./constants.js";
-import connectDB from "./db/db.js";
+import db from "./db/db.js";
 import app from "./app.js";
 
 
-connectDB()
+db.execute(sql`select 1`).then(()=>{
+    console.log("DATABASE CONNECTED!")
+})
 .then(() => {
     const server = app.listen(PORT,() => {
         console.log(`SERVER LISTENING ON PORT: ${PORT}`);
@@ -14,6 +17,7 @@ connectDB()
         process.exit(1);
     })
 })
-.catch((error) => {
+.catch((error: unknown) => {
     console.log("DATABASE CONNECTION FAILED !!!", error);
+    process.exit(1);
 })

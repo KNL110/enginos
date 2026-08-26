@@ -9,13 +9,19 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
+    "drizzle-orm": "^1.0.0-rc.4",
     "express": "^5.2.1",
+    "pg": "^8.23.0",
     "validator": "^13.15.35"
   },
   "devDependencies": {
@@ -23,11 +29,12 @@
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
-    "@types/node": "^22.15.0",
-    "@types/pg": "^8.11.10",
+    "@types/node": "^22.20.1",
+    "@types/pg": "^8.23.1",
     "@types/validator": "^13.12.2",
     "dotenv": "^17.4.2",
-    "tsx": "^4.19.2",
+    "drizzle-kit": "^1.0.0-rc.4",
+    "tsx": "^4.23.12",
     "typescript": "^5.7.3"
   }
 }
