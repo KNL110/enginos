@@ -1,73 +1,98 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import { Search, RefreshCw } from "lucide-react";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Spinner } from "@/components/ui/spinner";
-import { useLogout, useSession } from "@/hooks/useSession";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RepoCard } from "@/components/dashboard/repo-card";
+import { MOCK_REPOS, type RepoStatus } from "@/lib/mock-repos";
+
+type VisibilityFilter = "all" | "public" | "private";
+type StatusFilter = "all" | RepoStatus;
 
 export default function DashboardPage() {
-    const router = useRouter();
-    const { user, isLoading } = useSession();
-    const logoutMutation = useLogout();
+    const [search, setSearch] = useState("");
+    const [visibility, setVisibility] = useState<VisibilityFilter>("all");
+    const [status, setStatus] = useState<StatusFilter>("all");
 
-    // The middleware guard only checks for the `hasSession` cookie, not a
-    // verified session — this is the authoritative check, for the case
-    // where the cookie is present but the session it points at is stale.
-    useEffect(() => {
-        if (!isLoading && !user) {
-            router.replace("/login");
-        }
-    }, [isLoading, user, router]);
+    const repos = useMemo(() => {
+        const query = search.trim().toLowerCase();
+        return MOCK_REPOS.filter((repo) => {
+            if (visibility !== "all" && repo.visibility !== visibility) return false;
+            if (status !== "all" && repo.status !== status) return false;
+            if (query && !repo.name.toLowerCase().includes(query)) return false;
+            return true;
+        });
+    }, [search, visibility, status]);
 
-    if (isLoading || !user) {
-        return (
-            <div className="flex min-h-svh flex-1 items-center justify-center bg-background">
-                <Spinner className="size-6 text-muted-foreground" />
-            </div>
-        );
-    }
+    const readyCount = MOCK_REPOS.filter((repo) => repo.status === "ready").length;
 
     return (
-        <div className="relative flex min-h-svh flex-1 flex-col overflow-hidden bg-background">
-            <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 opacity-40 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black,transparent)] [background-image:linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] [background-size:32px_32px]"
-            />
-
-            <header className="relative flex items-center justify-between border-b border-border px-6 py-4">
-                <div className="flex items-center gap-2 font-mono text-sm text-muted-foreground">
-                    <span className="size-2 animate-pulse rounded-full bg-primary" />
-                    devpilot
+        <div className="flex flex-col gap-6 px-6 py-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-semibold">Repositories</h1>
+                    <p className="text-sm text-muted-foreground">
+                        {MOCK_REPOS.length} connected · {readyCount} ready
+                    </p>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <Avatar size="sm">
-                        {user.avatarUrl && (
-                            <AvatarImage src={user.avatarUrl} alt={user.username} />
-                        )}
-                        <AvatarFallback>
-                            {user.username.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                    </Avatar>
-                    <span className="font-mono text-sm">{user.username}</span>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => logoutMutation.mutate()}
-                        disabled={logoutMutation.isPending}
-                    >
-                        {logoutMutation.isPending ? <Spinner /> : "Log out"}
+                <div className="flex items-center gap-2">
+                    <InputGroup className="w-64">
+                        <InputGroupAddon>
+                            <Search />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                            placeholder="Search repositories..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </InputGroup>
+                    <Button variant="outline" disabled title="Not wired up yet — no sync backend">
+                        <RefreshCw />
+                        Sync
                     </Button>
                 </div>
-            </header>
+            </div>
 
-            <main className="relative flex flex-1 items-center justify-center px-6">
-                <p className="font-mono text-sm text-muted-foreground">
-                    Nothing here yet — dashboard content coming soon.
-                </p>
-            </main>
+            <div className="flex flex-wrap items-center gap-6">
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Visibility</span>
+                    <Tabs value={visibility} onValueChange={(v) => setVisibility(v as VisibilityFilter)}>
+                        <TabsList>
+                            <TabsTrigger value="all">All</TabsTrigger>
+                            <TabsTrigger value="public">Public</TabsTrigger>
+                            <TabsTrigger value="private">Private</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Status</span>
+                    <Tabs value={status} onValueChange={(v) => setStatus(v as StatusFilter)}>
+                        <TabsList>
+                            <TabsTrigger value="all">All</TabsTrigger>
+                            <TabsTrigger value="ready">Ready</TabsTrigger>
+                            <TabsTrigger value="indexing">Indexing</TabsTrigger>
+                            <TabsTrigger value="new">New</TabsTrigger>
+                            <TabsTrigger value="failed">Failed</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {repos.map((repo) => (
+                    <RepoCard key={repo.id} repo={repo} />
+                ))}
+
+                {repos.length === 0 && (
+                    <p className="col-span-full py-12 text-center text-sm text-muted-foreground">
+                        No repositories match these filters.
+                    </p>
+                )}
+            </div>
         </div>
     );
 }
