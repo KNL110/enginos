@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GitBranch, MessageSquareCode, Workflow } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
     Card,
     CardContent,
@@ -11,10 +12,13 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { Field, FieldError, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { toast } from "@/components/ui/toast";
 import { GithubIcon } from "@/components/icons/github-icon";
 import { githubLoginUrl } from "@/lib/api";
-import { useSession } from "@/hooks/useSession";
+import { useLogin, useSession } from "@/hooks/useSession";
 import { cn } from "@/lib/utils";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -25,6 +29,7 @@ const ERROR_MESSAGES: Record<string, string> = {
     access_denied: "You cancelled the GitHub authorization.",
     bad_verification_code: "That authorization code expired. Try signing in again.",
     oauth_failed: "Something went wrong signing in with GitHub. Try again.",
+    github_already_linked: "That GitHub account is already connected to a different DevPilot account.",
 };
 
 const FEATURES = [
@@ -38,6 +43,10 @@ export function LoginView() {
     const searchParams = useSearchParams();
     const errorCode = searchParams.get("error");
     const { user, isLoading } = useSession();
+    const loginMutation = useLogin();
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
     // A fresh login already lands on /dashboard directly (the backend
     // redirects there once the session is issued) — this is for someone
@@ -47,6 +56,33 @@ export function LoginView() {
             router.replace("/dashboard");
         }
     }, [user, router]);
+
+    // A failed link attempt (e.g. github_already_linked) leaves the existing
+    // session intact, so the effect above redirects to /dashboard almost
+    // immediately — an inline banner on this page would flash and vanish
+    // before anyone could read it. The toast is mounted at the root layout,
+    // so it survives that redirect and stays visible regardless.
+    //
+    // shownErrorRef guards against firing twice for the same code — without
+    // it, React StrictMode's dev-only double-invoke of effects on mount adds
+    // two overlapping toasts (confirmed live: two identical dialogs stacked
+    // on top of each other, easy to miss for exactly that reason).
+    const shownErrorRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (!errorCode || shownErrorRef.current === errorCode) return;
+        shownErrorRef.current = errorCode;
+        toast.add({
+            title: errorCode === "github_already_linked" ? "GitHub account already connected" : "Sign-in failed",
+            description: ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.oauth_failed,
+            type: "error",
+            timeout: 10000,
+        });
+    }, [errorCode]);
+
+    const handlePasswordLogin = (e: React.SubmitEvent) => {
+        e.preventDefault();
+        loginMutation.mutate({ email, password });
+    };
 
     const showSpinner = isLoading || !!user;
 
@@ -82,6 +118,48 @@ export function LoginView() {
                                 Continue with GitHub
                             </a>
 
+                            <FieldSeparator className="w-full">or continue with email</FieldSeparator>
+
+                            <form onSubmit={handlePasswordLogin} className="w-full">
+                                <FieldGroup>
+                                    <Field>
+                                        <FieldLabel htmlFor="email">Email</FieldLabel>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            required
+                                            autoComplete="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                        />
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel htmlFor="password">Password</FieldLabel>
+                                        <Input
+                                            id="password"
+                                            type="password"
+                                            required
+                                            autoComplete="current-password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                        />
+                                    </Field>
+                                    {loginMutation.isError && (
+                                        <FieldError>{loginMutation.error.message}</FieldError>
+                                    )}
+                                    <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                                        {loginMutation.isPending ? <Spinner className="size-4" /> : "Sign in"}
+                                    </Button>
+                                </FieldGroup>
+                            </form>
+
+                            <p className="text-sm text-muted-foreground">
+                                Don&apos;t have an account?{" "}
+                                <Link href="/signup" className="text-foreground underline underline-offset-4">
+                                    Sign up
+                                </Link>
+                            </p>
+
                             <div className="w-full space-y-3 border-t border-border pt-6">
                                 {FEATURES.map(({ icon: Icon, label }) => (
                                     <div
@@ -94,12 +172,6 @@ export function LoginView() {
                                 ))}
                             </div>
                         </>
-                    )}
-
-                    {errorCode && !showSpinner && (
-                        <p className="w-full rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-center text-sm text-destructive">
-                            {ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.oauth_failed}
-                        </p>
                     )}
                 </CardContent>
             </Card>

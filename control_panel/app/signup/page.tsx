@@ -41,7 +41,7 @@ export default function SignupPage() {
         }
     }, [user, justSignedUp, router]);
 
-    const handleSignup = (e: React.FormEvent) => {
+    const handleSignup = (e: React.SubmitEvent) => {
         e.preventDefault();
         signupMutation.mutate(
             { email, password },

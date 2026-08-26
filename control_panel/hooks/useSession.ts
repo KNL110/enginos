@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchMe, logout } from "@/lib/api";
+import { fetchMe, login, logout, signup, updateSettings } from "@/lib/api";
 import { hasCookie } from "@/lib/cookies";
 
 const SESSION_QUERY_KEY = ["session"];
@@ -62,6 +62,39 @@ export function useLogout() {
 		mutationFn: logout,
 		onSuccess: () => {
 			queryClient.setQueryData(SESSION_QUERY_KEY, null);
+		},
+	});
+}
+
+export function useSignup() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({ email, password }: { email: string; password: string }) => signup(email, password),
+		onSuccess: (user) => {
+			queryClient.setQueryData(SESSION_QUERY_KEY, user);
+		},
+	});
+}
+
+export function useLogin() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({ email, password }: { email: string; password: string }) => login(email, password),
+		onSuccess: (user) => {
+			queryClient.setQueryData(SESSION_QUERY_KEY, user);
+		},
+	});
+}
+
+export function useUpdateSettings() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: updateSettings,
+		onSuccess: (user) => {
+			queryClient.setQueryData(SESSION_QUERY_KEY, user);
 		},
 	});
 }
