@@ -23,7 +23,6 @@ const sanitizeUser = (user: typeof users.$inferSelect): SafeUser => ({
     id: user.id,
     username: user.username,
     avatarUrl: user.avatarUrl,
-    githubUsername: user.githubUsername,
 });
 
 const issueSession = async (res: Response, userId: string) => {
@@ -135,14 +134,13 @@ export const githubCallback = asyncHandler(async (req, res) => {
             username: githubUser.login,
             avatarUrl: githubUser.avatar_url,
             githubId: githubUser.id,
-            githubUsername: githubUser.login,
             githubAccessToken: githubAccessToken,
             githubTokenScope: scope ?? "",
         })
         .onConflictDoUpdate({
             target: users.githubId,
             set: {
-                githubUsername: githubUser.login,
+                username: githubUser.login,
                 avatarUrl: githubUser.avatar_url,
                 githubAccessToken: githubAccessToken,
                 githubTokenScope: scope ?? "",

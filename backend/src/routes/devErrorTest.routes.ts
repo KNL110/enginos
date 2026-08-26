@@ -82,7 +82,6 @@ router.get(
         await db.insert(users).values({
             username,
             githubId: Date.now(),
-            githubUsername: `${username}_1`,
             githubAccessToken: "test-token",
             githubTokenScope: "repo",
         });
@@ -91,7 +90,6 @@ router.get(
             await db.insert(users).values({
                 username,
                 githubId: Date.now() + 1,
-                githubUsername: `${username}_2`,
                 githubAccessToken: "test-token",
                 githubTokenScope: "repo",
             });

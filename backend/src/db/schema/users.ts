@@ -7,13 +7,11 @@ export const users = pgTable("users", {
 	username: varchar({ length: 255 }).notNull(),
 	avatarUrl: varchar("avatar_url", { length: 500 }),
 	githubId: bigint("github_id", { mode: 'number' }).notNull(),
-	githubUsername: varchar("github_username", { length: 255 }).notNull(),
 	githubAccessToken: text("github_access_token").notNull(),
 	githubTokenScope: text("github_token_scope").notNull(),
 	refreshToken: text("refresh_token"),
 	...timestamps
 }, (table) => [
 	unique("users_github_id_key").on(table.githubId),
-	unique("users_github_username_key").on(table.githubUsername),
 	unique("users_username_key").on(table.username)
 ]);

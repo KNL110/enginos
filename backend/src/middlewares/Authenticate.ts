@@ -19,7 +19,6 @@ const authenticate = asyncHandler(async (req, _res, next) => {
             id: users.id,
             username: users.username,
             avatarUrl: users.avatarUrl,
-            githubUsername: users.githubUsername,
         })
         .from(users)
         .where(eq(users.id, id));
