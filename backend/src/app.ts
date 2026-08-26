@@ -1,8 +1,11 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import errorHandler from "./middlewares/ErrorHandler.js"
+import notFound from "./middlewares/NotFound.js";
+import devErrorTestRouter from "./routes/devErrorTest.routes.js";
 
-import { CORS_ORIGIN } from "./constants.js";
+import { CORS_ORIGIN, NODE_ENV } from "./constants.js";
 
 if (!CORS_ORIGIN) {
     throw new Error("CORS_ORIGIN is not set");
@@ -25,5 +28,12 @@ app.use(cookieParser());
 
 
 // Routes declaration
+
+if (NODE_ENV !== "production") {
+    app.use("/dev/test-errors", devErrorTestRouter);
+}
+
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;

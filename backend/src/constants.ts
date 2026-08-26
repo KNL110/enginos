@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
 
+export const NODE_ENV: string = process.env.NODE_ENV || "development";
+
 export const DB_NAME: string | undefined = process.env.DB_NAME;
 export const DB_URI = `${process.env.DB_URL}/${DB_NAME}`;
 export const DB_USERNAME: string | undefined = process.env.DB_USERNAME;
