@@ -79,20 +79,10 @@ router.get(
     asyncHandler(async () => {
         const username = `__dup_${Date.now()}`;
 
-        await db.insert(users).values({
-            username,
-            githubId: Date.now(),
-            githubAccessToken: "test-token",
-            githubTokenScope: "repo",
-        });
+        await db.insert(users).values({ username });
 
         try {
-            await db.insert(users).values({
-                username,
-                githubId: Date.now() + 1,
-                githubAccessToken: "test-token",
-                githubTokenScope: "repo",
-            });
+            await db.insert(users).values({ username });
         } finally {
             await db.delete(users).where(eq(users.username, username));
         }

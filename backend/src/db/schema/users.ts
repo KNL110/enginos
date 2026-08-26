@@ -1,17 +1,15 @@
-import { pgTable, integer, uuid, varchar, bigint, text, timestamp, boolean, index, primaryKey, unique } from "drizzle-orm/pg-core"
+import { pgTable, uuid, varchar, text, unique } from "drizzle-orm/pg-core"
 import { timestamps } from "./columns.helper.js";
-
 
 export const users = pgTable("users", {
 	id: uuid().defaultRandom().primaryKey(),
 	username: varchar({ length: 255 }).notNull(),
-	avatarUrl: varchar("avatar_url", { length: 500 }),
-	githubId: bigint("github_id", { mode: 'number' }).notNull(),
-	githubAccessToken: text("github_access_token").notNull(),
-	githubTokenScope: text("github_token_scope").notNull(),
+	avatarUrl: varchar("avatar", { length: 500 }),
+	email: varchar({ length: 255 }),
+	password: text(),
 	refreshToken: text("refresh_token"),
 	...timestamps
 }, (table) => [
-	unique("users_github_id_key").on(table.githubId),
-	unique("users_username_key").on(table.username)
+	unique("users_username_key").on(table.username),
+	unique("users_email_key").on(table.email),
 ]);
