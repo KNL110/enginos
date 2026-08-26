@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
@@ -53,73 +54,81 @@ export function SettingsView() {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:flex-row">
-                <div className="flex shrink-0 flex-col items-center gap-3">
-                    <Avatar className="size-20">
-                        {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.username} />}
-                        <AvatarFallback className="text-lg">
-                            {user.username.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                    </Avatar>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Profile</CardTitle>
+                    <CardDescription>Your identity across DevPilot.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:flex-row">
+                        <div className="flex shrink-0 flex-col items-center gap-3">
+                            <Avatar className="size-20 ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
+                                {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.username} />}
+                                <AvatarFallback className="text-lg">
+                                    {user.username.slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                            </Avatar>
 
-                    {user.githubConnected ? (
-                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <GithubIcon className="size-3.5" />
-                            GitHub connected
-                        </span>
-                    ) : (
-                        <a
-                            href={githubLoginUrl}
-                            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
-                        >
-                            <GithubIcon className="size-3.5" />
-                            Connect GitHub
-                        </a>
-                    )}
-                </div>
+                            {user.githubConnected ? (
+                                <span className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                                    <GithubIcon className="size-3.5" />
+                                    GitHub connected
+                                </span>
+                            ) : (
+                                <a
+                                    href={githubLoginUrl}
+                                    className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
+                                >
+                                    <GithubIcon className="size-3.5" />
+                                    Connect GitHub
+                                </a>
+                            )}
+                        </div>
 
-                <FieldGroup className="flex-1">
-                    <Field>
-                        <FieldLabel htmlFor="username">Username</FieldLabel>
-                        <Input
-                            id="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                        />
-                    </Field>
+                        <FieldGroup className="flex-1">
+                            <Field>
+                                <FieldLabel htmlFor="username">Username</FieldLabel>
+                                <Input
+                                    id="username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                />
+                            </Field>
 
-                    <Field>
-                        <FieldLabel htmlFor="email">Email</FieldLabel>
-                        <Input id="email" value={user.email ?? ""} disabled />
-                    </Field>
+                            <Field>
+                                <FieldLabel htmlFor="email">Email</FieldLabel>
+                                <Input id="email" value={user.email ?? ""} disabled />
+                            </Field>
 
-                    <Field>
-                        <FieldLabel htmlFor="password">
-                            {user.hasPassword ? "Change password" : "Set a password"}
-                        </FieldLabel>
-                        <Input
-                            id="password"
-                            type="password"
-                            minLength={8}
-                            placeholder={user.hasPassword ? "Leave blank to keep current password" : ""}
-                            autoComplete="new-password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                    </Field>
+                            <Field>
+                                <FieldLabel htmlFor="password">
+                                    {user.hasPassword ? "Change password" : "Set a password"}
+                                </FieldLabel>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    minLength={8}
+                                    placeholder={user.hasPassword ? "Leave blank to keep current password" : ""}
+                                    autoComplete="new-password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                            </Field>
 
-                    {updateSettingsMutation.isError && (
-                        <FieldError>{updateSettingsMutation.error.message}</FieldError>
-                    )}
-                    {updateSettingsMutation.isSuccess && (
-                        <p className="text-sm text-primary">Saved.</p>
-                    )}
+                            {updateSettingsMutation.isError && (
+                                <FieldError>{updateSettingsMutation.error.message}</FieldError>
+                            )}
+                            {updateSettingsMutation.isSuccess && (
+                                <p className="text-sm text-primary">Saved.</p>
+                            )}
 
-                    <Button type="submit" className="w-fit" disabled={updateSettingsMutation.isPending}>
-                        {updateSettingsMutation.isPending ? <Spinner className="size-4" /> : "Save changes"}
-                    </Button>
-                </FieldGroup>
-            </form>
+                            <Button type="submit" className="w-fit" disabled={updateSettingsMutation.isPending}>
+                                {updateSettingsMutation.isPending ? <Spinner className="size-4" /> : "Save changes"}
+                            </Button>
+                        </FieldGroup>
+                    </form>
+                </CardContent>
+            </Card>
         </div>
     );
 }

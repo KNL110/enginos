@@ -13,16 +13,25 @@ import { useSession } from "@/hooks/useSession";
 import { useRepos } from "@/hooks/useRepos";
 import { cn } from "@/lib/utils";
 
+const STAT_TONE_CLASSES = {
+    primary: "bg-primary/10 text-primary",
+    blue: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    amber: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    muted: "bg-muted text-muted-foreground",
+} as const;
+
 function StatCard({
     label,
     value,
     hint,
     icon: Icon,
+    tone = "muted",
 }: {
     label: string;
     value: string | number;
     hint?: string;
     icon: typeof FolderGit2;
+    tone?: keyof typeof STAT_TONE_CLASSES;
 }) {
     return (
         <Card size="sm">
@@ -32,7 +41,7 @@ function StatCard({
                         <CardDescription>{label}</CardDescription>
                         <CardTitle className="mt-1 text-2xl font-semibold">{value}</CardTitle>
                     </div>
-                    <div className="rounded-lg bg-muted p-2 text-muted-foreground">
+                    <div className={cn("rounded-lg p-2", STAT_TONE_CLASSES[tone])}>
                         <Icon className="size-4" />
                     </div>
                 </div>
@@ -71,6 +80,7 @@ export default function OverviewPage() {
 
     const publicCount = repos.filter((repo) => !repo.private).length;
     const privateCount = repos.filter((repo) => repo.private).length;
+    const publicPct = repos.length > 0 ? Math.round((publicCount / repos.length) * 100) : 0;
     const lastSyncedAt = repos.reduce<string | null>((latest, repo) => {
         // repos don't carry updatedAt on the frontend type, githubUpdatedAt is
         // the closest real signal we have without adding another field
@@ -98,14 +108,21 @@ export default function OverviewPage() {
                     Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-28 rounded-2xl" />)
                 ) : (
                     <>
-                        <StatCard label="Repositories" value={repos.length} hint="Synced from GitHub" icon={FolderGit2} />
-                        <StatCard label="Public" value={publicCount} icon={Globe} />
-                        <StatCard label="Private" value={privateCount} icon={Lock} />
+                        <StatCard
+                            label="Repositories"
+                            value={repos.length}
+                            hint="Synced from GitHub"
+                            icon={FolderGit2}
+                            tone="primary"
+                        />
+                        <StatCard label="Public" value={publicCount} icon={Globe} tone="blue" />
+                        <StatCard label="Private" value={privateCount} icon={Lock} tone="amber" />
                         <StatCard
                             label="Last synced"
                             value={lastSyncedAt ? formatRelativeTime(lastSyncedAt) : "Never"}
                             hint="Hit Sync on Repositories to refresh"
                             icon={RefreshCw}
+                            tone="muted"
                         />
                     </>
                 )}
@@ -157,20 +174,38 @@ export default function OverviewPage() {
                     </div>
 
                     <Card>
-                        <CardContent className="space-y-3 pt-6">
+                        <CardContent className="space-y-4 pt-6">
                             {reposQuery.isLoading ? (
-                                Array.from({ length: 2 }).map((_, index) => <Skeleton key={index} className="h-8 rounded-lg" />)
-                            ) : (
+                                <Skeleton className="h-8 rounded-lg" />
+                            ) : repos.length > 0 ? (
                                 <>
+                                    <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                                        <div
+                                            className="h-full bg-blue-500 transition-all"
+                                            style={{ width: `${publicPct}%` }}
+                                        />
+                                        <div
+                                            className="h-full bg-amber-500 transition-all"
+                                            style={{ width: `${100 - publicPct}%` }}
+                                        />
+                                    </div>
                                     <div className="flex items-center justify-between gap-3">
-                                        <span className="text-sm text-muted-foreground">Public</span>
+                                        <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <span className="size-2 rounded-full bg-blue-500" />
+                                            Public
+                                        </span>
                                         <Badge variant="secondary">{publicCount}</Badge>
                                     </div>
                                     <div className="flex items-center justify-between gap-3">
-                                        <span className="text-sm text-muted-foreground">Private</span>
+                                        <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <span className="size-2 rounded-full bg-amber-500" />
+                                            Private
+                                        </span>
                                         <Badge variant="secondary">{privateCount}</Badge>
                                     </div>
                                 </>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">No repositories synced yet.</p>
                             )}
                         </CardContent>
                     </Card>
