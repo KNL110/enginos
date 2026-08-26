@@ -8,6 +8,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## The context of the project
 
-idea is at the root of this project in PortfolioSite/context/
+Read `context/README.md` at the repository root (`PortfolioSite/context/README.md`) before making product or architecture decisions here — it covers what DevPilot is, how this repo is laid out (`control_panel/` is DevPilot's UI; `portfolio/` is an unrelated personal site; `backend/` is the shared API), and what's built vs. still undecided.
 
 <!-- END:nextjs-agent-rules -->
