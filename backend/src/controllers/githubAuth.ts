@@ -17,6 +17,7 @@ import {
     clearCookieOptions,
     sessionHintCookieOptions,
 } from "../utils/token.js";
+import { fetchWithRetry } from "../utils/fetchWithRetry.js";
 
 const REFRESH_TOKEN_SALT_ROUNDS = 10;
 
@@ -93,7 +94,7 @@ export const githubCallback = asyncHandler(async (req, res) => {
     }
 
     try {
-        const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
+        const tokenResponse = await fetchWithRetry("https://github.com/login/oauth/access_token", {
             method: "POST",
             headers: {
                 "Accept": "application/json",
@@ -120,7 +121,7 @@ export const githubCallback = asyncHandler(async (req, res) => {
 
         const { access_token: githubAccessToken, scope } = tokenData;
 
-        const userResponse = await fetch("https://api.github.com/user", {
+        const userResponse = await fetchWithRetry("https://api.github.com/user", {
             headers: {
                 "Authorization": `Bearer ${githubAccessToken}`,
                 "Accept": "application/vnd.github+json",
