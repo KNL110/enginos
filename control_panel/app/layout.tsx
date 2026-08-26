@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DevPilot",
+  title: "ENGINOS",
   description: "Connect your repos, ask questions about them, and manage your pipelines.",
 };
 

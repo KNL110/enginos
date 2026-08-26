@@ -29,7 +29,7 @@ const ERROR_MESSAGES: Record<string, string> = {
     access_denied: "You cancelled the GitHub authorization.",
     bad_verification_code: "That authorization code expired. Try signing in again.",
     oauth_failed: "Something went wrong signing in with GitHub. Try again.",
-    github_already_linked: "That GitHub account is already connected to a different DevPilot account.",
+    github_already_linked: "That GitHub account is already connected to a different ENGINOS account.",
 };
 
 const FEATURES = [
@@ -97,9 +97,9 @@ export function LoginView() {
                 <CardHeader className="items-center gap-4 text-center">
                     <div className="flex items-center gap-2 font-mono text-sm text-muted-foreground">
                         <span className="size-2 animate-pulse rounded-full bg-primary" />
-                        devpilot
+                        enginos
                     </div>
-                    <CardTitle className="text-3xl">Sign in to DevPilot</CardTitle>
+                    <CardTitle className="text-3xl">Sign in to ENGINOS</CardTitle>
                     <CardDescription className="font-mono text-sm">
                         $ authenticate --provider github
                     </CardDescription>

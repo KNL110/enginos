@@ -5,7 +5,7 @@ export const fetchGithubApi = (accessToken: string, path: string): Promise<Respo
         headers: {
             "Authorization": `Bearer ${accessToken}`,
             "Accept": "application/vnd.github+json",
-            "User-Agent": "DevPilot",
+            "User-Agent": "ENGINOS",
         },
     });
 };

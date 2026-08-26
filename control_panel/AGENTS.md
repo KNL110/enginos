@@ -10,6 +10,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## The context of the project
 
-Read `context/README.md` at the repository root (`PortfolioSite/context/README.md`) before making product or architecture decisions here — it covers what DevPilot is, how this repo is laid out (`control_panel/` is DevPilot's UI; `portfolio/` is an unrelated personal site; `backend/` is the shared API), and what's built vs. still undecided.
+Read `context/README.md` at the repository root (`PortfolioSite/context/README.md`) before making product or architecture decisions here — it covers what ENGINOS is, how this repo is laid out (`control_panel/` is ENGINOS's UI; `portfolio/` is an unrelated personal site; `backend/` is the shared API), and what's built vs. still undecided.
 
 (This section lives below the `next dev`-generated block above because content placed inside that block gets wiped on every regeneration — confirmed while working on this.)

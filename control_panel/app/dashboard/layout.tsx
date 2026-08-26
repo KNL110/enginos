@@ -81,7 +81,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                     <span className="size-2 animate-pulse rounded-full bg-primary-foreground" />
                                 </span>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
-                                    <span className="truncate font-mono font-semibold">devpilot</span>
+                                    <span className="truncate font-mono font-semibold">enginos</span>
                                     <span className="truncate text-xs text-muted-foreground">
                                         Chat with your code
                                     </span>

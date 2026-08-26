@@ -82,7 +82,7 @@ const fetchPrimaryEmail = async (githubAccessToken: string): Promise<string | nu
             headers: {
                 "Authorization": `Bearer ${githubAccessToken}`,
                 "Accept": "application/vnd.github+json",
-                "User-Agent": "DevPilot",
+                "User-Agent": "ENGINOS",
             },
         });
         if (!response.ok) return null;
@@ -149,7 +149,7 @@ const fetchGithubProfile = async (githubAccessToken: string): Promise<ProfileFet
         headers: {
             "Authorization": `Bearer ${githubAccessToken}`,
             "Accept": "application/vnd.github+json",
-            "User-Agent": "DevPilot",
+            "User-Agent": "ENGINOS",
         },
     });
 

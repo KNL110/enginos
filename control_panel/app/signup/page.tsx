@@ -62,13 +62,13 @@ export default function SignupPage() {
                 <CardHeader className="items-center gap-4 text-center">
                     <div className="flex items-center gap-2 font-mono text-sm text-muted-foreground">
                         <span className="size-2 animate-pulse rounded-full bg-primary" />
-                        devpilot
+                        enginos
                     </div>
                     {justSignedUp ? (
                         <>
                             <CardTitle className="text-3xl">Connect GitHub?</CardTitle>
                             <CardDescription className="font-mono text-sm">
-                                $ devpilot connect --provider github
+                                $ enginos connect --provider github
                             </CardDescription>
                         </>
                     ) : (

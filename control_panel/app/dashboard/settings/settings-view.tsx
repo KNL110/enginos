@@ -57,7 +57,7 @@ export function SettingsView() {
             <Card>
                 <CardHeader>
                     <CardTitle>Profile</CardTitle>
-                    <CardDescription>Your identity across DevPilot.</CardDescription>
+                    <CardDescription>Your identity across ENGINOS.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:flex-row">

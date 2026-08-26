@@ -3,7 +3,7 @@ import { timestamps } from "./columns.helper.js";
 import { users } from "./users.js";
 
 // One row per (user, GitHub repo) synced from GitHub — the same repo can
-// validly belong to two different DevPilot users (collaborators), so
+// validly belong to two different ENGINOS users (collaborators), so
 // uniqueness is per-user, not global.
 export const repos = pgTable("repos", {
 	id: uuid().defaultRandom().primaryKey(),
