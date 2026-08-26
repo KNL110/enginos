@@ -25,11 +25,18 @@ const noopSubscribe = () => () => {};
 // is built for exactly this — its `getServerSnapshot` is what both the
 // server render and the client's first (pre-hydration) render use, so they
 // stay identical; only after hydration does it switch to the real value.
-function useHasSessionHint(): boolean {
+//
+// The server snapshot returns `null`, not `false` — a real "no cookie" has
+// to be distinguishable from "haven't checked the real value yet". A page
+// that redirects-if-logged-out (the dashboard) needs to treat the second
+// case as still loading, not as a confirmed "not logged in" — otherwise it
+// fires that redirect off the transient pre-hydration render, which is
+// exactly what was flashing /login on every dashboard reload.
+function useHasSessionHint(): boolean | null {
 	return useSyncExternalStore(
 		noopSubscribe,
 		() => hasCookie("hasSession"),
-		() => false
+		() => null
 	);
 }
 
@@ -39,12 +46,12 @@ export function useSession() {
 	const query = useQuery({
 		queryKey: SESSION_QUERY_KEY,
 		queryFn: fetchMe,
-		enabled: hasSessionHint,
+		enabled: hasSessionHint === true,
 	});
 
 	return {
 		user: query.data ?? null,
-		isLoading: query.isLoading,
+		isLoading: hasSessionHint === null || (hasSessionHint && query.isLoading),
 	};
 }
 
