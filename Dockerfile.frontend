@@ -1,0 +1,63 @@
+# Builds and runs BOTH Next.js frontends (control_panel and portfolio) in one
+# image. Must be built with the repo root as context, since it needs both
+# sibling directories — not from inside either app's own folder:
+#   docker build -f Dockerfile.frontend \
+#     --build-arg NEXT_PUBLIC_API_URL=https://api.example.com \
+#     -t enginos-frontend .
+#   docker run -p 3000:3000 -p 3001:3001 enginos-frontend
+#
+# control_panel listens on 3001, portfolio on 3000 (matching local dev) —
+# override via CONTROL_PANEL_PORT/PORTFOLIO_PORT env vars at `docker run`.
+#
+# NEXT_PUBLIC_API_URL is a build-time value (Next.js inlines NEXT_PUBLIC_*
+# vars into the client bundle at build time), so it's a --build-arg, not
+# something you can just set at `docker run` time.
+
+# ---- control_panel: dependencies ----
+FROM node:24-slim AS control-panel-deps
+WORKDIR /app/control_panel
+COPY control_panel/package.json control_panel/package-lock.json ./
+RUN npm ci
+
+# ---- control_panel: build ----
+FROM node:24-slim AS control-panel-builder
+WORKDIR /app/control_panel
+COPY --from=control-panel-deps /app/control_panel/node_modules ./node_modules
+COPY control_panel/ ./
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+RUN npm run build
+
+# ---- portfolio: dependencies ----
+FROM node:24-slim AS portfolio-deps
+WORKDIR /app/portfolio
+COPY portfolio/package.json portfolio/package-lock.json ./
+RUN npm ci
+
+# ---- portfolio: build ----
+FROM node:24-slim AS portfolio-builder
+WORKDIR /app/portfolio
+COPY --from=portfolio-deps /app/portfolio/node_modules ./node_modules
+COPY portfolio/ ./
+RUN npm run build
+
+# ---- runner: both standalone servers, started together ----
+FROM node:24-slim AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+RUN groupadd --system --gid 1001 nodejs && useradd --system --uid 1001 --gid nodejs frontend
+
+COPY --from=control-panel-builder --chown=frontend:nodejs /app/control_panel/.next/standalone ./control_panel
+COPY --from=control-panel-builder --chown=frontend:nodejs /app/control_panel/.next/static ./control_panel/.next/static
+COPY --from=control-panel-builder --chown=frontend:nodejs /app/control_panel/public ./control_panel/public
+
+COPY --from=portfolio-builder --chown=frontend:nodejs /app/portfolio/.next/standalone ./portfolio
+COPY --from=portfolio-builder --chown=frontend:nodejs /app/portfolio/.next/static ./portfolio/.next/static
+COPY --from=portfolio-builder --chown=frontend:nodejs /app/portfolio/public ./portfolio/public
+
+COPY --chown=frontend:nodejs docker/start-frontends.sh ./start-frontends.sh
+RUN chmod +x ./start-frontends.sh
+
+USER frontend
+EXPOSE 3000 3001
+CMD ["./start-frontends.sh"]

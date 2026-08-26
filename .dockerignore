@@ -1,0 +1,12 @@
+# Used for the root-context Dockerfile.frontend build.
+backend
+context
+scripts
+**/node_modules
+**/.next
+**/.env
+**/.env.*
+!**/.env.example
+.git
+.gitignore
+*.md
