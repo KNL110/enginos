@@ -10,6 +10,7 @@ export const users = pgTable("users", {
 	githubUsername: varchar("github_username", { length: 255 }).notNull(),
 	githubAccessToken: text("github_access_token").notNull(),
 	githubTokenScope: text("github_token_scope").notNull(),
+	refreshToken: text("refresh_token"),
 	...timestamps
 }, (table) => [
 	unique("users_github_id_key").on(table.githubId),

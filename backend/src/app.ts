@@ -25,9 +25,11 @@ app.use(cookieParser());
 
 
 // Routes import
+import githubAuthRoutes from "./routes/githubAuth.route.js";
 
 
 // Routes declaration
+app.use("/api/v1/user", githubAuthRoutes);
 
 if (NODE_ENV !== "production") {
     app.use("/dev/test-errors", devErrorTestRouter);
