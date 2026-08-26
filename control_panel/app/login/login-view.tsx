@@ -1,9 +1,9 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { GitBranch, MessageSquareCode, Workflow } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
@@ -11,11 +11,10 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/spinner";
 import { GithubIcon } from "@/components/icons/github-icon";
 import { githubLoginUrl } from "@/lib/api";
-import { useLogout, useSession } from "@/hooks/useSession";
+import { useSession } from "@/hooks/useSession";
 import { cn } from "@/lib/utils";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -35,10 +34,21 @@ const FEATURES = [
 ];
 
 export function LoginView() {
+    const router = useRouter();
     const searchParams = useSearchParams();
     const errorCode = searchParams.get("error");
     const { user, isLoading } = useSession();
-    const logoutMutation = useLogout();
+
+    // A fresh login already lands on /dashboard directly (the backend
+    // redirects there once the session is issued) — this is for someone
+    // navigating back to /login while already holding a valid session.
+    useEffect(() => {
+        if (user) {
+            router.replace("/dashboard");
+        }
+    }, [user, router]);
+
+    const showSpinner = isLoading || !!user;
 
     return (
         <div className="relative flex min-h-svh flex-1 items-center justify-center overflow-hidden bg-background px-4 py-16">
@@ -53,37 +63,15 @@ export function LoginView() {
                         <span className="size-2 animate-pulse rounded-full bg-primary" />
                         devpilot
                     </div>
-                    <CardTitle className="text-3xl">
-                        {user ? "You're signed in" : "Sign in to DevPilot"}
-                    </CardTitle>
+                    <CardTitle className="text-3xl">Sign in to DevPilot</CardTitle>
                     <CardDescription className="font-mono text-sm">
-                        {user ? `~/${user.username}` : "$ authenticate --provider github"}
+                        $ authenticate --provider github
                     </CardDescription>
                 </CardHeader>
 
                 <CardContent className="flex flex-col items-center gap-6 py-6">
-                    {isLoading ? (
+                    {showSpinner ? (
                         <Spinner className="size-6 text-muted-foreground" />
-                    ) : user ? (
-                        <>
-                            <Avatar size="lg" className="size-20">
-                                {user.avatarUrl && (
-                                    <AvatarImage src={user.avatarUrl} alt={user.username} />
-                                )}
-                                <AvatarFallback className="text-lg">
-                                    {user.username.slice(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                            </Avatar>
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                className="h-12 w-full text-base"
-                                onClick={() => logoutMutation.mutate()}
-                                disabled={logoutMutation.isPending}
-                            >
-                                {logoutMutation.isPending ? <Spinner /> : "Log out"}
-                            </Button>
-                        </>
                     ) : (
                         <>
                             <a
@@ -108,7 +96,7 @@ export function LoginView() {
                         </>
                     )}
 
-                    {errorCode && !user && !isLoading && (
+                    {errorCode && !showSpinner && (
                         <p className="w-full rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-center text-sm text-destructive">
                             {ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.oauth_failed}
                         </p>
