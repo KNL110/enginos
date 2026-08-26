@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { GitBranch, MessageSquareCode, Workflow } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +28,12 @@ const ERROR_MESSAGES: Record<string, string> = {
     oauth_failed: "Something went wrong signing in with GitHub. Try again.",
 };
 
+const FEATURES = [
+    { icon: GitBranch, label: "Connect and index your repositories" },
+    { icon: MessageSquareCode, label: "Ask questions about your codebase" },
+    { icon: Workflow, label: "Manage your DevOps pipelines" },
+];
+
 export function LoginView() {
     const searchParams = useSearchParams();
     const errorCode = searchParams.get("error");
@@ -41,35 +48,36 @@ export function LoginView() {
             />
 
             <Card className="relative w-full max-w-sm">
-                <CardHeader className="items-center gap-3 text-center">
-                    <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-                        <span className="size-1.5 animate-pulse rounded-full bg-primary" />
+                <CardHeader className="items-center gap-4 text-center">
+                    <div className="flex items-center gap-2 font-mono text-sm text-muted-foreground">
+                        <span className="size-2 animate-pulse rounded-full bg-primary" />
                         devpilot
                     </div>
-                    <CardTitle className="text-xl">
+                    <CardTitle className="text-3xl">
                         {user ? "You're signed in" : "Sign in to DevPilot"}
                     </CardTitle>
-                    <CardDescription className="font-mono text-xs">
+                    <CardDescription className="font-mono text-sm">
                         {user ? `~/${user.username}` : "$ authenticate --provider github"}
                     </CardDescription>
                 </CardHeader>
 
-                <CardContent className="flex flex-col items-center gap-4">
+                <CardContent className="flex flex-col items-center gap-6 py-6">
                     {isLoading ? (
-                        <Spinner className="size-5 text-muted-foreground" />
+                        <Spinner className="size-6 text-muted-foreground" />
                     ) : user ? (
                         <>
-                            <Avatar size="lg">
+                            <Avatar size="lg" className="size-20">
                                 {user.avatarUrl && (
                                     <AvatarImage src={user.avatarUrl} alt={user.username} />
                                 )}
-                                <AvatarFallback>
+                                <AvatarFallback className="text-lg">
                                     {user.username.slice(0, 2).toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>
                             <Button
                                 variant="outline"
-                                className="w-full"
+                                size="lg"
+                                className="h-12 w-full text-base"
                                 onClick={() => logoutMutation.mutate()}
                                 disabled={logoutMutation.isPending}
                             >
@@ -77,17 +85,31 @@ export function LoginView() {
                             </Button>
                         </>
                     ) : (
-                        <a
-                            href={githubLoginUrl}
-                            className={cn(buttonVariants({ size: "lg" }), "w-full gap-2")}
-                        >
-                            <GithubIcon className="size-4" />
-                            Continue with GitHub
-                        </a>
+                        <>
+                            <a
+                                href={githubLoginUrl}
+                                className={cn(buttonVariants({ size: "lg" }), "h-12 w-full gap-2 text-base")}
+                            >
+                                <GithubIcon className="size-5" />
+                                Continue with GitHub
+                            </a>
+
+                            <div className="w-full space-y-3 border-t border-border pt-6">
+                                {FEATURES.map(({ icon: Icon, label }) => (
+                                    <div
+                                        key={label}
+                                        className="flex items-center gap-3 font-mono text-sm text-muted-foreground"
+                                    >
+                                        <Icon className="size-4 shrink-0 text-foreground" />
+                                        {label}
+                                    </div>
+                                ))}
+                            </div>
+                        </>
                     )}
 
                     {errorCode && !user && !isLoading && (
-                        <p className="w-full rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-center text-xs text-destructive">
+                        <p className="w-full rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-center text-sm text-destructive">
                             {ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.oauth_failed}
                         </p>
                     )}
