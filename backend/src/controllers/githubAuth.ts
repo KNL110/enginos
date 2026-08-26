@@ -15,6 +15,7 @@ import {
     accessTokenCookieOptions,
     refreshTokenCookieOptions,
     clearCookieOptions,
+    sessionHintCookieOptions,
 } from "../utils/token.js";
 
 const REFRESH_TOKEN_SALT_ROUNDS = 10;
@@ -34,6 +35,17 @@ const issueSession = async (res: Response, userId: string) => {
 
     res.cookie("accessToken", accessToken, accessTokenCookieOptions);
     res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+    res.cookie("hasSession", "1", sessionHintCookieOptions);
+};
+
+// githubCallback is a browser-redirect target (GitHub navigates the user's
+// browser straight to it) — a thrown ApiError would render as raw JSON
+// instead of returning the user to the app, so every failure path there
+// redirects back to the frontend with a short, stable error code instead.
+const redirectWithError = (res: Response, code: string) => {
+    const url = new URL("/login", FRONTEND_URL!);
+    url.searchParams.set("error", code);
+    return res.redirect(url.toString());
 };
 
 interface GithubTokenResponse {
@@ -77,81 +89,83 @@ export const githubCallback = asyncHandler(async (req, res) => {
     const { code } = req.query;
 
     if (!code || typeof code !== "string") {
-        throw new ApiError(400, "Github Authorization code is missing");
+        return redirectWithError(res, "missing_code");
     }
 
-    const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
-        method: "POST",
-        headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            client_id: GITHUB_CLIENT_ID,
-            client_secret: GITHUB_CLIENT_SECRET,
-            code,
-            redirect_uri: GITHUB_CALLBACK_URL,
-        }),
-    });
+    try {
+        const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
+            method: "POST",
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                client_id: GITHUB_CLIENT_ID,
+                client_secret: GITHUB_CLIENT_SECRET,
+                code,
+                redirect_uri: GITHUB_CALLBACK_URL,
+            }),
+        });
 
-    if (!tokenResponse.ok) {
-        throw new ApiError(502, "Failed to reach Github while exchanging authorization code");
-    }
+        if (!tokenResponse.ok) {
+            return redirectWithError(res, "github_unreachable");
+        }
 
-    const tokenData = (await tokenResponse.json()) as GithubTokenResponse;
+        const tokenData = (await tokenResponse.json()) as GithubTokenResponse;
 
-    // GitHub responds 200 OK even on failure, with an `error` field instead of a status code.
-    if (tokenData.error || !tokenData.access_token) {
-        throw new ApiError(
-            400,
-            tokenData.error_description || "Failed to retrieve access token from Github"
-        );
-    }
+        // GitHub responds 200 OK even on failure, with an `error` field instead of a status code.
+        if (tokenData.error || !tokenData.access_token) {
+            return redirectWithError(res, tokenData.error || "oauth_failed");
+        }
 
-    const { access_token: githubAccessToken, scope } = tokenData;
+        const { access_token: githubAccessToken, scope } = tokenData;
 
-    const userResponse = await fetch("https://api.github.com/user", {
-        headers: {
-            "Authorization": `Bearer ${githubAccessToken}`,
-            "Accept": "application/vnd.github+json",
-            "User-Agent": "PortfolioSite-App",
-        },
-    });
+        const userResponse = await fetch("https://api.github.com/user", {
+            headers: {
+                "Authorization": `Bearer ${githubAccessToken}`,
+                "Accept": "application/vnd.github+json",
+                "User-Agent": "PortfolioSite-App",
+            },
+        });
 
-    if (!userResponse.ok) {
-        throw new ApiError(502, "Failed to fetch Github user profile");
-    }
+        if (!userResponse.ok) {
+            return redirectWithError(res, "profile_unreachable");
+        }
 
-    const githubUser = (await userResponse.json()) as GithubUserResponse;
+        const githubUser = (await userResponse.json()) as GithubUserResponse;
 
-    if (!githubUser?.id || !githubUser?.login) {
-        throw new ApiError(502, "Github user profile response was malformed");
-    }
+        if (!githubUser?.id || !githubUser?.login) {
+            return redirectWithError(res, "profile_invalid");
+        }
 
-    const [user] = await db
-        .insert(users)
-        .values({
-            username: githubUser.login,
-            avatarUrl: githubUser.avatar_url,
-            githubId: githubUser.id,
-            githubAccessToken: githubAccessToken,
-            githubTokenScope: scope ?? "",
-        })
-        .onConflictDoUpdate({
-            target: users.githubId,
-            set: {
+        const [user] = await db
+            .insert(users)
+            .values({
                 username: githubUser.login,
                 avatarUrl: githubUser.avatar_url,
+                githubId: githubUser.id,
                 githubAccessToken: githubAccessToken,
                 githubTokenScope: scope ?? "",
-                updatedAt: new Date(),
-            },
-        })
-        .returning();
+            })
+            .onConflictDoUpdate({
+                target: users.githubId,
+                set: {
+                    username: githubUser.login,
+                    avatarUrl: githubUser.avatar_url,
+                    githubAccessToken: githubAccessToken,
+                    githubTokenScope: scope ?? "",
+                    updatedAt: new Date(),
+                },
+            })
+            .returning();
 
-    await issueSession(res, user!.id);
+        await issueSession(res, user!.id);
 
-    return res.redirect(FRONTEND_URL!);
+        return res.redirect(FRONTEND_URL!);
+    } catch (error) {
+        console.error("[github-callback] unexpected failure", error);
+        return redirectWithError(res, "oauth_failed");
+    }
 });
 
 export const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -168,6 +182,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     if (!user?.refreshToken) {
         res.clearCookie("accessToken", clearCookieOptions);
         res.clearCookie("refreshToken", clearCookieOptions);
+        res.clearCookie("hasSession", clearCookieOptions);
         throw new ApiError(401, "Refresh token is invalid");
     }
 
@@ -176,6 +191,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     if (!isValid) {
         res.clearCookie("accessToken", clearCookieOptions);
         res.clearCookie("refreshToken", clearCookieOptions);
+        res.clearCookie("hasSession", clearCookieOptions);
         throw new ApiError(401, "Refresh token is invalid");
     }
 
@@ -191,6 +207,7 @@ export const logoutUser = asyncHandler(async (req, res) => {
 
     res.clearCookie("accessToken", clearCookieOptions);
     res.clearCookie("refreshToken", clearCookieOptions);
+    res.clearCookie("hasSession", clearCookieOptions);
 
     return res.json(
         new ApiResponse(200, null, "Logged out successfully")

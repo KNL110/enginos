@@ -111,3 +111,14 @@ export const refreshTokenCookieOptions: CookieOptions = {
 };
 
 export const clearCookieOptions: CookieOptions = baseCookieOptions;
+
+// Deliberately NOT httpOnly: this cookie carries no secret, it just lets the
+// frontend know "a session might exist" without reading an httpOnly token.
+// Same lifetime as the access token, since that's what actually determines
+// whether a /me call would succeed right now.
+export const sessionHintCookieOptions: CookieOptions = {
+    secure: NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: ACCESS_TOKEN_EXPIRY_SECONDS * 1000,
+};
