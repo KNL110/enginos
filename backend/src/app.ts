@@ -26,10 +26,12 @@ app.use(cookieParser());
 
 // Routes import
 import AuthRoutes from "./routes/Auth.route.js";
+import ReposRoutes from "./routes/repos.route.js";
 
 
 // Routes declaration
 app.use("/api/v1/user", AuthRoutes);
+app.use("/api/v1/repos", ReposRoutes);
 
 if (NODE_ENV !== "production") {
     app.use("/dev/test-errors", devErrorTestRouter);
