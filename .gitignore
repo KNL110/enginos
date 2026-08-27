@@ -3,3 +3,5 @@ temp.txt
 futurePlan.txt
 context
 db_dump.bak
+.env
+*/.env
