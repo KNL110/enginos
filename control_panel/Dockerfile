@@ -19,7 +19,11 @@ FROM node:24-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ARG NEXT_PUBLIC_API_URL
+# Defaulted to the backend's Cloud Run URL because our deploy path (Cloud
+# Run's console-based continuous deployment from GitHub, Dockerfile mode)
+# has no way to pass --build-arg. Override with --build-arg for local/manual
+# builds against a different backend.
+ARG NEXT_PUBLIC_API_URL=https://enginos-git-711843441118.asia-south1.run.app
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build
 
