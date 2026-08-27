@@ -1,9 +1,3 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-if (!API_URL) {
-    throw new Error("NEXT_PUBLIC_API_URL is not set");
-}
-
 export interface SessionUser {
     id: string;
     username: string;
@@ -34,10 +28,10 @@ export interface Repo {
     githubUpdatedAt: string | null;
 }
 
-export const githubLoginUrl = `${API_URL}/api/v1/user/github`;
+export const githubLoginUrl = "/api/v1/user/github";
 
 export async function fetchMe(): Promise<SessionUser | null> {
-    const res = await fetch(`${API_URL}/api/v1/user/me`, {
+    const res = await fetch("/api/v1/user/me", {
         credentials: "include",
     });
 
@@ -54,7 +48,7 @@ export async function fetchMe(): Promise<SessionUser | null> {
 }
 
 export async function logout(): Promise<void> {
-    const res = await fetch(`${API_URL}/api/v1/user/logout`, {
+    const res = await fetch("/api/v1/user/logout", {
         method: "POST",
         credentials: "include",
     });
@@ -68,7 +62,7 @@ export async function logout(): Promise<void> {
 // backend's actual error message on failure (e.g. "Invalid email or
 // password") instead of a generic one — callers show `err.message` directly.
 async function sendJson<T>(method: "POST" | "PATCH", path: string, body?: unknown): Promise<T> {
-    const res = await fetch(`${API_URL}${path}`, {
+    const res = await fetch(path, {
         method,
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -85,7 +79,7 @@ async function sendJson<T>(method: "POST" | "PATCH", path: string, body?: unknow
 }
 
 async function getJson<T>(path: string): Promise<T> {
-    const res = await fetch(`${API_URL}${path}`, { credentials: "include" });
+    const res = await fetch(path, { credentials: "include" });
 
     const payload = (await res.json().catch(() => null)) as ApiResponse<T> | null;
 
