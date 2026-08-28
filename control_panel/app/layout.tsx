@@ -18,6 +18,17 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ENGINOS",
   description: "Connect your repos, ask questions about them, and manage your pipelines.",
+  openGraph: {
+    title: "ENGINOS",
+    description: "Connect your repos, ask questions about them, and manage your pipelines.",
+    images: ["/Enginos.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ENGINOS",
+    description: "Connect your repos, ask questions about them, and manage your pipelines.",
+    images: ["/Enginos.png"],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

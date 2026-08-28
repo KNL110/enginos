@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutGrid, FolderGit2, Settings as SettingsIcon } from "lucide-react";
@@ -78,7 +79,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <SidebarMenuItem>
                             <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
                                 <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-primary">
-                                    <span className="size-2 animate-pulse rounded-full bg-primary-foreground" />
+                                    <Image
+                                        src="/enginos-mark.png"
+                                        alt=""
+                                        width={32}
+                                        height={32}
+                                        className="size-6 object-contain"
+                                    />
                                 </span>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-mono font-semibold">enginos</span>

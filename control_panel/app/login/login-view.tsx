@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GitBranch, MessageSquareCode, Workflow } from "lucide-react";
@@ -96,7 +97,7 @@ export function LoginView() {
             <Card className="relative w-full max-w-sm">
                 <CardHeader className="items-center gap-4 text-center">
                     <div className="flex items-center gap-2 font-mono text-sm text-muted-foreground">
-                        <span className="size-2 animate-pulse rounded-full bg-primary" />
+                        <Image src="/enginos-mark.png" alt="" width={20} height={20} className="size-5" />
                         enginos
                     </div>
                     <CardTitle className="text-3xl">Sign in to ENGINOS</CardTitle>
