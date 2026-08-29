@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   // Bundles a minimal server + traced node_modules into .next/standalone —
   // what the Docker build copies into the runtime image instead of the
   // full node_modules tree.
-  output: "standalone",
+  // output: "standalone",
 
   // Proxies API calls through this app's own origin so the backend's
   // auth cookies (accessToken/refreshToken/hasSession) end up scoped to
